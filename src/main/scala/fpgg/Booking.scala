@@ -14,34 +14,7 @@ case class Room(
 
 case class Booking(rooms: List[Room])
 
-object QuickSort {
-
-  trait Order[A] { self =>
-    def compare(a1: A, a2: A): Int
-
-    def revert: Order[A] = new Order[A] {
-      def compare(a1: A, a2: A) = -self.compare(a1, a2)
-    }
-  }
-
-  private def lessOrEqual[A](a: A, l: List[A])(implicit order: Order[A]) =
-    l.filter(el => order.compare(el, a) <= 0)
-
-  private def greater[A](a: A, l: List[A])(implicit order: Order[A]) =
-    l.filter(el => order.compare(el, a) > 0)
-
-  def sort[A : Order](rooms: List[A]): List[A] = rooms match {
-    case Nil => Nil
-    case r :: tail =>
-      sort(lessOrEqual(r, tail)) ++ List(r) ++ sort(greater(r, tail))
-  }
-}
-
 object Functions {
-
-  implicit def orderRoom: QuickSort.Order[Room] = new QuickSort.Order[Room] {
-    def compare(r1: Room, r2: Room) = (r1.rating - r2.rating).toInt
-  }.revert
 
   val costPerPerson: Room => Double = {
     case room => room.price / room.capacity
@@ -56,7 +29,7 @@ object Functions {
   val filterWithView: List[Room] => List[Room] = filter(_.view)
 
   val sortByRating: List[Room] => List[Room] =
-    (rooms: List[Room]) => QuickSort.sort(rooms)
+    (rooms: List[Room]) => rooms.sorted
 
   val proposeBest: Booking => Room =
     ((b: Booking) => b.rooms) >>> pickAvailable >>> filterWithView >>> sortByRating >>> (rooms => rooms(0))
