@@ -17,4 +17,7 @@ object Functions {
     case room => room.price / room.capacity
   }
 
+  // available & with View & has best ranting
+  val proposeBest: Booking => Room = ???
+
 }
