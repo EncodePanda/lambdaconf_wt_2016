@@ -35,6 +35,10 @@ object QuickSort {
 
 object Functions {
 
+  implicit def orderRoom: QuickSort.Order[Room] = new QuickSort.Order[Room] {
+    def compare(r1: Room, r2: Room) = (r1.rating - r2.rating).toInt
+  }
+
   val costPerPerson: Room => Double = {
     case room => room.price / room.capacity
   }
@@ -47,8 +51,8 @@ object Functions {
 
   val filterWithView: List[Room] => List[Room] = filter(_.view)
 
-  val sortByRating: List[Room] => List[Room] = ???
-    // (rooms: List[Room]) => QuickSort.sort(rooms)
+  val sortByRating: List[Room] => List[Room] =
+    (rooms: List[Room]) => QuickSort.sort(rooms)
 
   val proposeBest: Booking => Room =
     ((b: Booking) => b.rooms) >>> pickAvailable >>> filterWithView >>> sortByRating >>> (rooms => rooms(0))
@@ -58,7 +62,6 @@ object Functions {
 object Sandbox extends App {
 
   import Functions._
-
 
   val booking = Booking(List(
     Room("1", 0, view = true, capacity = 5, price = 100, rating = 3.2, booked = false),
