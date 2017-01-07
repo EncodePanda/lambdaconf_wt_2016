@@ -17,6 +17,10 @@ object Functions {
     case room => room.price / room.capacity
   }
 
+  val pickAvailable: List[Room] => List[Room] = ???
+  val filterWithView: List[Room] => List[Room] = ???
+  val sortByRating: List[Room] => List[Room] = ???
+
   // available & with View & has best ranting
   val proposeBest: Booking => Room = ???
 
