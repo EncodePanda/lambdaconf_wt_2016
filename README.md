@@ -14,12 +14,14 @@ This repository will contain fine-grained commits that will slowly extend our wo
 
 ## About this workshop
 
-*TL;DR*
+__TL;DR__
+
 1. This is a intro to FP with Scala - minimum: You understand basic language syntax, you understand how implicit arguments work
+
 2. Intended from zero to hero however it is assumed that some audience is familiarized with trivial concepts
 (like: higer order functions, immutability)
 
-*Detailed*
+__Detailed__
 
 This talk is designed for all those interested in learning Functional Programming, to tackle real world problems that they stamp upon every day at work. Functional Programming brings sanity to our industry as it gives you ability to handle complexity with modular & composable code.
 Keep in mind however that Functional Programming is not a magic wand that will suddenly make complexity disappear. If your problem is relatively difficult, simple immutable data structures and function composition will not suffice. Complexity is hard, simplicity is however not easy. Good news is: all problems you've encountered have been solved decades ago. Knowing them will prevent you from rediscovering the wheel.
