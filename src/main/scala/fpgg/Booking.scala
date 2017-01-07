@@ -16,18 +16,19 @@ case class Booking(rooms: List[Room])
 
 object QuickSort {
 
-  private def lessOrEqual(room: Room, l: List[Room]) =
-    l.filter(r => r.rating >= room.rating)
+  private def lessOrEqual[A](a: A, l: List[A]) =
+    l.filter(???)
 
-  private def greater(room: Room, l: List[Room]) =
-    l.filter(r => r.rating < room.rating)
+  private def greater[A](a: A, l: List[A]) =
+    l.filter(???)
 
-  def sort(rooms: List[Room]): List[Room] = rooms match {
+  def sort[A](rooms: List[A]): List[A] = rooms match {
     case Nil => Nil
     case r :: tail =>
       sort(lessOrEqual(r, tail)) ++ List(r) ++ sort(greater(r, tail))
   }
 }
+
 
 object Functions {
 
