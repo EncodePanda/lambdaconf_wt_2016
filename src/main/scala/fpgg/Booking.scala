@@ -30,7 +30,7 @@ object QuickSort {
   private def greater[A](a: A, l: List[A])(implicit order: Order[A]) =
     l.filter(el => order.compare(el, a) > 0)
 
-  def sort[A](rooms: List[A])(implicit order: Order[A]): List[A] = rooms match {
+  def sort[A : Order](rooms: List[A]): List[A] = rooms match {
     case Nil => Nil
     case r :: tail =>
       sort(lessOrEqual(r, tail)) ++ List(r) ++ sort(greater(r, tail))
