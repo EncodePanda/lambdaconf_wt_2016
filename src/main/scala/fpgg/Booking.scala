@@ -24,7 +24,10 @@ object Functions {
     case rooms => rooms.filter(r => !r.booked)
   }
 
-  val filterWithView: List[Room] => List[Room] = ???
+  val filterWithView: List[Room] => List[Room] = {
+    case rooms => rooms.filter(r => r.view)
+  }
+
   val sortByRating: List[Room] => List[Room] = ???
 
 
