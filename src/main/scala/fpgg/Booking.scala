@@ -1,5 +1,8 @@
 package ffgg
 
+import scalaz._
+import Scalaz._
+
 case class Room(
   no: String,
   floor: Int,
@@ -23,7 +26,7 @@ object Functions {
 
 
   val proposeBest: Booking => Room =
-    ((b: Booking) => b.rooms) andThen pickAvailable andThen filterWithView andThen sortByRating andThen (rooms => rooms(0))
+    ((b: Booking) => b.rooms) >>> pickAvailable >>> filterWithView >>> sortByRating >>> (rooms => rooms(0))
 
 
 }
