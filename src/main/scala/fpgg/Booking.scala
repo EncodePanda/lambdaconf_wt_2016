@@ -20,13 +20,13 @@ object Functions {
     case room => room.price / room.capacity
   }
 
-  val pickAvailable: List[Room] => List[Room] = {
-    case rooms => rooms.filter(r => !r.booked)
+  def filter(predicate: Room => Boolean): List[Room] => List[Room] = {
+    case rooms => rooms.filter(predicate)
   }
 
-  val filterWithView: List[Room] => List[Room] = {
-    case rooms => rooms.filter(r => r.view)
-  }
+  val pickAvailable: List[Room] => List[Room] = filter(!_.booked)
+
+  val filterWithView: List[Room] => List[Room] = filter(_.view)
 
   val sortByRating: List[Room] => List[Room] = ???
 
