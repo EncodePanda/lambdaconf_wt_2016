@@ -1,5 +1,7 @@
 package ffgg
 
+import scala.math.{Ordering => SOrdering}
+
 import scalaz._
 import Scalaz._
 
@@ -15,6 +17,10 @@ case class Room(
 case class Booking(rooms: List[Room])
 
 object Functions {
+
+  implicit def roomOrdering: SOrdering[Room] = new SOrdering[Room] {
+    def compare(r1: Room, r2: Room): Int = (r1.rating - r2.rating).toInt
+  }.reverse
 
   val costPerPerson: Room => Double = {
     case room => room.price / room.capacity
