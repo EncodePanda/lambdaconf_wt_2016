@@ -17,10 +17,10 @@ case class Booking(rooms: List[Room])
 object QuickSort {
 
   private def lessOrEqual(room: Room, l: List[Room]) =
-    l.filter(r => r.rating <= room.rating)
+    l.filter(r => r.rating >= room.rating)
 
   private def greater(room: Room, l: List[Room]) =
-    l.filter(r => r.rating > room.rating)
+    l.filter(r => r.rating < room.rating)
 
   def sort(rooms: List[Room]): List[Room] = rooms match {
     case Nil => Nil
