@@ -21,7 +21,9 @@ object Functions {
   val filterWithView: List[Room] => List[Room] = ???
   val sortByRating: List[Room] => List[Room] = ???
 
-  // available & with View & has best ranting
-  val proposeBest: Booking => Room = ???
+
+  val proposeBest: Booking => Room =
+    ((b: Booking) => b.rooms) andThen pickAvailable andThen filterWithView andThen sortByRating andThen (rooms => rooms(0))
+
 
 }
