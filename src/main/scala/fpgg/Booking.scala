@@ -20,16 +20,16 @@ object QuickSort {
     def compare(a1: A, a2: A): Int
   }
 
-  private def lessOrEqual[A](a: A, l: List[A])(order: Order[A]) =
+  private def lessOrEqual[A](a: A, l: List[A])(implicit order: Order[A]) =
     l.filter(el => order.compare(el, a) <= 0)
 
-  private def greater[A](a: A, l: List[A])(order: Order[A]) =
+  private def greater[A](a: A, l: List[A])(implicit order: Order[A]) =
     l.filter(el => order.compare(el, a) > 0)
 
-  def sort[A](rooms: List[A])(order: Order[A]): List[A] = rooms match {
+  def sort[A](rooms: List[A])(implicit order: Order[A]): List[A] = rooms match {
     case Nil => Nil
     case r :: tail =>
-      sort(lessOrEqual(r, tail)(order))(order) ++ List(r) ++ sort(greater(r, tail)(order))(order)
+      sort(lessOrEqual(r, tail)) ++ List(r) ++ sort(greater(r, tail))
   }
 }
 
