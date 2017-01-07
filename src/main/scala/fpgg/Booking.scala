@@ -16,8 +16,12 @@ case class Booking(rooms: List[Room])
 
 object QuickSort {
 
-  trait Order[A] {
+  trait Order[A] { self =>
     def compare(a1: A, a2: A): Int
+
+    def revert: Order[A] = new Order[A] {
+      def compare(a1: A, a2: A) = -self.compare(a1, a2)
+    }
   }
 
   private def lessOrEqual[A](a: A, l: List[A])(implicit order: Order[A]) =
@@ -37,7 +41,7 @@ object Functions {
 
   implicit def orderRoom: QuickSort.Order[Room] = new QuickSort.Order[Room] {
     def compare(r1: Room, r2: Room) = (r1.rating - r2.rating).toInt
-  }
+  }.revert
 
   val costPerPerson: Room => Double = {
     case room => room.price / room.capacity
