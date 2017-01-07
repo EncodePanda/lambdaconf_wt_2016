@@ -16,19 +16,22 @@ case class Booking(rooms: List[Room])
 
 object QuickSort {
 
-  private def lessOrEqual[A](a: A, l: List[A]) =
-    l.filter(???)
+  trait Order[A] {
+    def compare(a1: A, a2: A): Int
+  }
 
-  private def greater[A](a: A, l: List[A]) =
-    l.filter(???)
+  private def lessOrEqual[A](a: A, l: List[A])(order: Order[A]) =
+    l.filter(el => order.compare(el, a) <= 0)
 
-  def sort[A](rooms: List[A]): List[A] = rooms match {
+  private def greater[A](a: A, l: List[A])(order: Order[A]) =
+    l.filter(el => order.compare(el, a) > 0)
+
+  def sort[A](rooms: List[A])(order: Order[A]): List[A] = rooms match {
     case Nil => Nil
     case r :: tail =>
-      sort(lessOrEqual(r, tail)) ++ List(r) ++ sort(greater(r, tail))
+      sort(lessOrEqual(r, tail)(order))(order) ++ List(r) ++ sort(greater(r, tail)(order))(order)
   }
 }
-
 
 object Functions {
 
@@ -44,8 +47,8 @@ object Functions {
 
   val filterWithView: List[Room] => List[Room] = filter(_.view)
 
-  val sortByRating: List[Room] => List[Room] =
-    (rooms: List[Room]) => QuickSort.sort(rooms)
+  val sortByRating: List[Room] => List[Room] = ???
+    // (rooms: List[Room]) => QuickSort.sort(rooms)
 
   val proposeBest: Booking => Room =
     ((b: Booking) => b.rooms) >>> pickAvailable >>> filterWithView >>> sortByRating >>> (rooms => rooms(0))
@@ -55,6 +58,7 @@ object Functions {
 object Sandbox extends App {
 
   import Functions._
+
 
   val booking = Booking(List(
     Room("1", 0, view = true, capacity = 5, price = 100, rating = 3.2, booked = false),
