@@ -2,7 +2,13 @@
 
 ## Prepare your set-up!
 
-TBD
+It is adived that prior to arriving at the workshop you will:
+
+1. git clone this repository
+2. compile it with sbt `sbt compile` to fetch all needed dependencies
+
+You can use whatever IDE or text editor you prefer. 
+This repository will contain fine-grained commits that will slowly extend our workspace. If you want to follow the presentation on your machine, I recommend setting up a short-cut to "jump" into next commit.
 
 ## About this workshop
 
