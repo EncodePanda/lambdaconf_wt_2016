@@ -117,61 +117,69 @@ object DealingWithChangingState {
 
   object BookingService {
 
-    def addRoom(booking: Booking)(no: String,
+    def addRoom(no: String,
       floor: Int,
       view: Boolean,
       capacity: Int
-    ): (Booking, Room) = {
-      val room = RoomGenerator.generateRoom(no, floor, view, capacity)
-      val newBooking = booking.copy(
-        rooms = room :: booking.rooms,
-        events = RoomAdded(no) :: booking.events
-      )
-      (newBooking, room)
+    ): Booking => (Booking, Room) = {
+      case booking => {
+        val room = RoomGenerator.generateRoom(no, floor, view, capacity)
+        val newBooking = booking.copy(
+          rooms = room :: booking.rooms,
+          events = RoomAdded(no) :: booking.events
+        )
+        (newBooking, room)
+      }
     }
 
-    def currentReservationId(booking: Booking): ReservationId =
-      booking.rooms.flatMap(_.booked.map(_.id)).foldLeft(0)(Math.max)
-
-    def fetchRoom(booking: Booking)(no: String): (Booking, Option[Room]) = {
-      val newBooking = booking.copy(
-        events = RoomFetched(no) :: booking.events
-      )
-      val fetched = booking.rooms.filter(_.no == no).headOption
-      (newBooking, fetched)
+    def currentReservationId: Booking => (Booking, ReservationId) = {
+      case booking =>
+        (booking, booking.rooms.flatMap(_.booked.map(_.id)).foldLeft(0)(Math.max))
     }
 
-    def book(booking: Booking)(
-      room: Room,
-      period: Period,
-      guest: Guest,
-      reservationId: ReservationId
-    ): (Booking, Unit) = {
-      val reservation = Reservation(reservationId, period, guest)
-      val updatedRoom = room.copy(booked = reservation :: room.booked)
-
-      val newBooking = booking.copy (
-        events = ReservationMade(reservationId) :: booking.events,
-        rooms = updatedRoom :: booking.rooms.filter(_ != room)
-      )
-      (newBooking, ())
+    def fetchRoom(no: String): Booking => (Booking, Option[Room]) = {
+      case booking => {
+        val newBooking = booking.copy(
+          events = RoomFetched(no) :: booking.events
+        )
+        val fetched = booking.rooms.filter(_.no == no).headOption
+        (newBooking, fetched)
+      }
     }
 
-    def bookVip(booking: Booking)(
+    def book(
+      room: Room, period: Period, guest: Guest, reservationId: ReservationId
+    ): Booking => (Booking, Unit) = {
+      case booking => {
+        val reservation = Reservation(reservationId, period, guest)
+        val updatedRoom = room.copy(booked = reservation :: room.booked)
+
+        val newBooking = booking.copy (
+          events = ReservationMade(reservationId) :: booking.events,
+          rooms = updatedRoom :: booking.rooms.filter(_ != room)
+        )
+        (newBooking, ())
+      }
+    }
+
+    def bookVip(
       no: String,
       floor: Int,
       view: Boolean,
       capacity: Int,
       period: Period
-    )(guest: Guest): (Booking, ReservationId) = {
-      val (nb1, maybeRoom) = fetchRoom(booking)(no)
-      val (nb2, room) = maybeRoom match {
-        case Some(r) => (nb1, r)
-        case None => addRoom(nb1)(no, floor, view, capacity)
+    )(guest: Guest): Booking => (Booking, ReservationId) = {
+      case booking => {
+        val (nb1, maybeRoom) = fetchRoom(no)(booking)
+        val (nb2, room) = maybeRoom match {
+          case Some(r) => (nb1, r)
+          case None => addRoom(no, floor, view, capacity)(nb1)
+        }
+        val reservationId = currentReservationId(nb2)._2 + 1
+        val (nb3, _) = book(room, period, guest, reservationId)(nb2)
+        (nb3, reservationId)
       }
-      val reservationId = currentReservationId(nb2) + 1
-      val (nb3, _) = book(nb2)(room, period, guest, reservationId)
-      (nb3, reservationId)
     }
+
   }
 }
