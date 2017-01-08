@@ -78,7 +78,7 @@ object Functions2 {
     (r: Room, p: Price) => r.price <= p
 
   def affordableFor[F[_] : Applicative](room: F[Room], price: Price): F[Boolean] = 
-    Apply[F].apply2(room, price.point[F])(isAffordable)
+    (room |@| price.point[F])(isAffordable)
   
 }
 
