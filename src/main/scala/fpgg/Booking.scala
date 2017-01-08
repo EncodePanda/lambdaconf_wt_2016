@@ -1,5 +1,6 @@
 package ffgg
 
+import language.higherKinds
 import scala.math.{Ordering => SOrdering}
 import java.time.LocalDate
 
@@ -36,7 +37,7 @@ object Functions {
     def compare(r1: Room, r2: Room): Int = (r1.rating - r2.rating).toInt
   }.reverse
 
-  val costPerPerson: Option[Room] => Option[Double] = {
+  def costPerPerson[F[_]](implicit f: Functor[F]): F[Room] => F[Double] = {
     case maybeRoom => maybeRoom.map(room => room.price / room.capacity)
   }
   val pickAvailable: (Period, List[Room]) => List[Room] = {
@@ -66,7 +67,7 @@ object Functions {
   }
 
   val costPerPersonForBest: (Booking, Period, NoPpl) => Option[Double] =
-    Function.untupled(proposeBest.tupled >>> costPerPerson)
+    Function.untupled(proposeBest.tupled >>> costPerPerson[Option])
 }
 
 object Sandbox extends App {
