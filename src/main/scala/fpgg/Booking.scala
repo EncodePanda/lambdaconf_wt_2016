@@ -36,8 +36,8 @@ object Functions {
     def compare(r1: Room, r2: Room): Int = (r1.rating - r2.rating).toInt
   }.reverse
 
-  val costPerPerson: Room => Double = {
-    case room => room.price / room.capacity
+  val costPerPerson: Option[Room] => Option[Double] = {
+    case maybeRoom => maybeRoom.map(room => room.price / room.capacity)
   }
   val pickAvailable: (Period, List[Room]) => List[Room] = {
     case(period, rooms) => rooms.filter { room =>
@@ -66,7 +66,7 @@ object Functions {
   }
 
   val costPerPersonForBest: (Booking, Period, NoPpl) => Option[Double] =
-    Function.untupled(proposeBest.tupled >>> (_.map(costPerPerson)))
+    Function.untupled(proposeBest.tupled >>> costPerPerson)
 }
 
 object Sandbox extends App {
