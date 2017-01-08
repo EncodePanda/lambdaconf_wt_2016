@@ -32,8 +32,8 @@ object Domain {
     booked: List[Reservation])
 
   case class Booking(
-    rooms: List[Room] = List.empty[Room],
-    events: List[Event] = List.empty[Event]
+    var rooms: List[Room] = List.empty[Room],
+    var events: List[Event] = List.empty[Event]
   )
 }
 
@@ -105,10 +105,20 @@ object DealingWithChangingState {
 
   import Domain._
 
+  class RoomGenerator {
+    def generateRoom(
+      no: String,
+      floor: Int,
+      view: Boolean,
+      capacity: Int
+    ): Room =
+      Room(no, floor, view, capacity, capacity * 100, 10.0, booked = List.empty[Reservation])
+  }
+
   /*
    * Corrupted approach
    */
-  class BookingService {
+  class BookingService(booking: Booking, roomGenerator: RoomGenerator) {
 
     // adds room to booking, stores an event
     def addRoom(
@@ -116,7 +126,12 @@ object DealingWithChangingState {
       floor: Int,
       view: Boolean,
       capacity: Int
-    ): Room = ???
+    ): Room = {
+      val room = roomGenerator.generateRoom(no, floor, view, capacity)
+      booking.events = RoomAdded(no) :: booking.events
+      booking.rooms = room :: booking.rooms
+      room
+    }
 
     // returns current reservation id
     def currentReservationId: ReservationId = ???
