@@ -70,6 +70,18 @@ object Functions {
     Function.untupled(proposeBest.tupled >>> costPerPerson[Option])
 }
 
+object Functions2 {
+
+  import Domain._
+
+  val isAffordable: (Room, Price) => Boolean =
+    (r: Room, p: Price) => r.price <= p
+
+  def affordableFor[F[_] : Functor](room: F[Room], price: F[Price]): F[Boolean] = ???
+
+  
+}
+
 object Sandbox extends App {
 
   import Functions._
