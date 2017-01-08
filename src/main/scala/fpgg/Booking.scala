@@ -63,8 +63,8 @@ object Functions {
 
   }
 
-  lazy val costPerPersonForBest2: (Booking, Period, NoPpl) => Double = ???
-  
+  val costPerPersonForBest: (Booking, Period, NoPpl) => Double =
+    Function.untupled(proposeBest.tupled >>> costPerPerson)
 }
 
 object Sandbox extends App {
