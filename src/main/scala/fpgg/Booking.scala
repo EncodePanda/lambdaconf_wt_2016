@@ -13,6 +13,11 @@ object Domain {
   type ReservationId = Int
   type Price = Double
 
+  trait Event
+  case class RoomFetched(no: String) extends Event
+  case class RoomAdded(no: String) extends Event
+  case class ReservationMade(id: ReservationId) extends Event
+
   case class Period(from: LocalDate, to: LocalDate)
   case class Guest(firstName: String, lastName: String)
   case class Reservation(id: ReservationId, period: Period, guest: Guest)
@@ -26,7 +31,10 @@ object Domain {
     rating: Double,
     booked: List[Reservation])
 
-  case class Booking(rooms: List[Room] = List.empty[Room])
+  case class Booking(
+    rooms: List[Room] = List.empty[Room],
+    events: List[Event] = List.empty[Event]
+  )
 }
 
 object Functions {
@@ -53,7 +61,7 @@ object Functions {
     (rooms: List[Room]) => rooms.sorted
 
   val proposeBest: (Booking, Period, NoPpl) => Option[Room] = {
-    case (Booking(rooms), period, noPpl) => {
+    case (Booking(rooms, _), period, noPpl) => {
       val pickForPeriod: List[Room] => List[Room] = pickAvailable.curried(period)
       val filterForNoPpl: List[Room] => List[Room] = filterCanAccomodate.curried(noPpl)
 
@@ -90,21 +98,46 @@ object Functions2 {
     p <- fetchPeriod(b)
     n <- fetchNoPpl(b)
   } yield proposeBest(b, p, n)
-
   
 }
 
-object Sandbox extends App {
+object DealingWithChangingState {
 
-  import Functions._
   import Domain._
 
-  type Error[A] = String \/ A
-  def parse(json: String): Error[Room] = ???
-  val cpp: Error[Double] = costPerPerson[Error].apply(parse("json goes here"))
+  /*
+   * Corrupted approach
+   */
+  class BookingService {
 
-  def fetchFromDB(no: String): Task[Room] = ???
-  val cpp2: Task[Double] = costPerPerson[Task].apply(fetchFromDB("1c"))
+    // adds room to booking, stores an event
+    def addRoom(
+      no: String,
+      floor: Int,
+      view: Boolean,
+      capacity: Int
+    ): Room = ???
 
+    // returns current reservation id
+    def currentReservationId: ReservationId = ???
+
+    // fetches room by number
+    def fetchRoom(no: String): Option[Room] = ???
+
+    // books a guest to a room for a given period
+    def book(
+      room: Room,
+      period: Period,
+      guest: Guest,
+      reservationId: ReservationId): Unit = ???
+
+    // book vor VIP = book given room, if it does not exist then build it
+    def bookVip(
+      no: String,
+      floor: Int,
+      view: Boolean,
+      capacity: Int,
+      period: Period
+    )(guest: Guest): ReservationId = ???
+  }
 }
-
