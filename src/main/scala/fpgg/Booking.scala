@@ -51,20 +51,22 @@ object Functions {
   val sortByRating: List[Room] => List[Room] =
     (rooms: List[Room]) => rooms.sorted
 
-  val proposeBest: (Booking, Period, NoPpl) => Room = {
+  val proposeBest: (Booking, Period, NoPpl) => Option[Room] = {
     case (Booking(rooms), period, noPpl) => {
       val pickForPeriod: List[Room] => List[Room] = pickAvailable.curried(period)
       val filterForNoPpl: List[Room] => List[Room] = filterCanAccomodate.curried(noPpl)
 
-      val propose: List[Room] => Room =
-        pickForPeriod >>> filterWithView >>> filterForNoPpl >>> sortByRating >>> (rooms => rooms(0))
+      val propose: List[Room] => Option[Room] =
+        pickForPeriod >> filterWithView >> filterForNoPpl >> sortByRating >> {
+          case r::tail => Some(r)
+          case Nil => None
+        }
       propose(rooms)
     }
-
   }
 
-  val costPerPersonForBest: (Booking, Period, NoPpl) => Double =
-    Function.untupled(proposeBest.tupled >>> costPerPerson)
+  val costPerPersonForBest: (Booking, Period, NoPpl) => Option[Double] =
+    Function.untupled(proposeBest.tupled >>> (_.map(costPerPerson)))
 }
 
 object Sandbox extends App {
@@ -82,5 +84,6 @@ object Sandbox extends App {
   val period = Period(LocalDate.of(2017,1,8), LocalDate.of(2017,1,12))
 
   println(proposeBest(booking, period, 3))
+  println(costPerPersonForBest(booking, period, 3))
 }
 
