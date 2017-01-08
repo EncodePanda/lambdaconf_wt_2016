@@ -77,9 +77,9 @@ object Functions2 {
   val isAffordable: (Room, Price) => Boolean =
     (r: Room, p: Price) => r.price <= p
 
-  def affordableFor[F[_] : Functor](room: F[Room], price: Price): F[Boolean] = {
+  def affordableFor[F[_] : Apply](room: F[Room], price: Price): F[Boolean] = {
     val func: F[Price => Boolean] = room.map(isAffordable.curried)
-    ???
+    Apply[F].ap(???/*price*/)(func)
   }
 
   
