@@ -184,6 +184,21 @@ object DealingWithChangingState {
   }
 }
 
+object IOOperations {
+  import Domain._
+
+  object InMemoryDB {
+    var booking: Booking = new Booking()
+  }
+
+  val fetchBooking: () => Task[Booking] = () => Task.delay {
+    InMemoryDB.booking
+  }
+  val updateBooking: Booking => Task[Unit] = (booking: Booking) => Task.delay {
+    InMemoryDB.booking = booking
+  }
+}
+
 object Sandbox extends App {
 
   import Domain._
