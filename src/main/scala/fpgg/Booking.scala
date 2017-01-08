@@ -12,6 +12,7 @@ object Domain {
   type NoPpl = Int
   type ReservationId = Int
   type Price = Double
+  type GuestId = Int
 
   trait Event
   case class RoomFetched(no: String) extends Event
@@ -189,6 +190,7 @@ object IOOperations {
 
   object InMemoryDB {
     var booking: Booking = new Booking()
+    var guests: Map[GuestId, Guest] = Map(1 -> Guest("Pawel", "Szulc"))
   }
 
   val fetchBooking: () => Task[Booking] = () => Task.delay {
@@ -196,6 +198,9 @@ object IOOperations {
   }
   val updateBooking: Booking => Task[Unit] = (booking: Booking) => Task.delay {
     InMemoryDB.booking = booking
+  }
+  val findGuest: GuestId => Task[Guest] = (id: GuestId) => Task.delay {
+    InMemoryDB.guests(id)
   }
 }
 
@@ -205,10 +210,11 @@ object Sandbox extends App {
   import DealingWithChangingState.BookingService._
   import IOOperations._
 
-  val guest = Guest("Pawel", "Szulc")
   val period = Period(LocalDate.of(2017, 1, 8), LocalDate.of(2017, 1, 12))
 
+  /* this does not compile */
   val recipe: BookingState[List[ReservationId]] = for {
+    guest <- findGuest(1)
     resId1 <- bookVip("101", floor = 1, view = true, capacity = 5, period)(guest)
     resId2 <- bookVip("102", floor = 1, view = true, capacity = 5, period)(guest)
   } yield List(resId1, resId2)
