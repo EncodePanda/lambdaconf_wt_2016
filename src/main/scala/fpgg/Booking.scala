@@ -121,7 +121,7 @@ object DealingWithChangingState {
       floor: Int,
       view: Boolean,
       capacity: Int
-    ): Booking => (Booking, Room) = {
+    ): State[Booking, Room] = State({
       case booking => {
         val room = RoomGenerator.generateRoom(no, floor, view, capacity)
         val newBooking = booking.copy(
@@ -130,14 +130,14 @@ object DealingWithChangingState {
         )
         (newBooking, room)
       }
-    }
+    })
 
-    def currentReservationId: Booking => (Booking, ReservationId) = {
+    def currentReservationId: State[Booking, ReservationId] = State({
       case booking =>
         (booking, booking.rooms.flatMap(_.booked.map(_.id)).foldLeft(0)(Math.max))
-    }
+    })
 
-    def fetchRoom(no: String): Booking => (Booking, Option[Room]) = {
+    def fetchRoom(no: String): State[Booking, Option[Room]] = State({
       case booking => {
         val newBooking = booking.copy(
           events = RoomFetched(no) :: booking.events
@@ -145,11 +145,11 @@ object DealingWithChangingState {
         val fetched = booking.rooms.filter(_.no == no).headOption
         (newBooking, fetched)
       }
-    }
+    })
 
     def book(
       room: Room, period: Period, guest: Guest, reservationId: ReservationId
-    ): Booking => (Booking, Unit) = {
+    ): State[Booking, Unit] = State({
       case booking => {
         val reservation = Reservation(reservationId, period, guest)
         val updatedRoom = room.copy(booked = reservation :: room.booked)
@@ -160,7 +160,7 @@ object DealingWithChangingState {
         )
         (newBooking, ())
       }
-    }
+    })
 
     def bookVip(
       no: String,
@@ -168,18 +168,6 @@ object DealingWithChangingState {
       view: Boolean,
       capacity: Int,
       period: Period
-    )(guest: Guest): Booking => (Booking, ReservationId) = {
-      case booking => {
-        val (nb1, maybeRoom) = fetchRoom(no)(booking)
-        val (nb2, room) = maybeRoom match {
-          case Some(r) => (nb1, r)
-          case None => addRoom(no, floor, view, capacity)(nb1)
-        }
-        val reservationId = currentReservationId(nb2)._2 + 1
-        val (nb3, _) = book(room, period, guest, reservationId)(nb2)
-        (nb3, reservationId)
-      }
-    }
-
+    )(guest: Guest): State[Booking, ReservationId] = ???
   }
 }
