@@ -146,7 +146,16 @@ object DealingWithChangingState {
       period: Period,
       guest: Guest,
       reservationId: ReservationId
-    ): (Booking, Unit) = ???
+    ): (Booking, Unit) = {
+      val reservation = Reservation(reservationId, period, guest)
+      val updatedRoom = room.copy(booked = reservation :: room.booked)
+
+      val newBooking = booking.copy (
+        events = ReservationMade(reservationId) :: booking.events,
+        rooms = updatedRoom :: booking.rooms.filter(_ != room)
+      )
+      (newBooking, ())
+    }
 
     def bookVip(booking: Booking)(
       no: String,
