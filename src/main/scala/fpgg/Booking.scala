@@ -1,22 +1,36 @@
 package ffgg
 
 import scala.math.{Ordering => SOrdering}
+import java.time.LocalDate
 
 import scalaz._
 import Scalaz._
 
-case class Room(
-  no: String,
-  floor: Int,
-  view: Boolean,
-  capacity: Int,
-  price: Double,
-  rating: Double,
-  booked: Boolean)
+object Domain {
 
-case class Booking(rooms: List[Room])
+  type NoPpl = Int
+  type ReservationId = Int
+  type Price = Double
+
+  case class Period(from: LocalDate, to: LocalDate)
+  case class Guest(firstName: String, lastName: String)
+  case class Reservation(id: ReservationId, period: Period, guest: Guest)
+
+  case class Room(
+    no: String,
+    floor: Int,
+    view: Boolean,
+    capacity: Int,
+    price: Price,
+    rating: Double,
+    booked: List[Reservation])
+
+  case class Booking(rooms: List[Room] = List.empty[Room])
+}
 
 object Functions {
+
+  import Domain._
 
   implicit def roomOrdering: SOrdering[Room] = new SOrdering[Room] {
     def compare(r1: Room, r2: Room): Int = (r1.rating - r2.rating).toInt
@@ -25,36 +39,21 @@ object Functions {
   val costPerPerson: Room => Double = {
     case room => room.price / room.capacity
   }
-
-  def filter(predicate: Room => Boolean): List[Room] => List[Room] = {
-    case rooms => rooms.filter(predicate)
+  val pickAvailable: (Period, List[Room]) => List[Room] = {
+    case(period, rooms) => rooms.filter { room =>
+      !room.booked.map(_.period).contains(period)
+    }
   }
-
-  val pickAvailable: List[Room] => List[Room] = filter(!_.booked)
-
-  val filterWithView: List[Room] => List[Room] = filter(_.view)
-
+  val filterWithView: List[Room] => List[Room] =
+    (rooms: List[Room]) => rooms.filter(_.view)
+  val filterCanAccomodate: (NoPpl, List[Room]) => List[Room] =
+    (noPpl, rooms: List[Room]) => rooms.filter(_.capacity >= noPpl)
   val sortByRating: List[Room] => List[Room] =
     (rooms: List[Room]) => rooms.sorted
 
-  val proposeBest: Booking => Room =
-    ((b: Booking) => b.rooms) >>> pickAvailable >>> filterWithView >>> sortByRating >>> (rooms => rooms(0))
+  val proposeBest: (Booking, Period, NoPpl) => Room = ???
 
-  val costPerPersonForBest: Booking => Double =
-    proposeBest >>> costPerPerson
+  val costPerPersonForBest2: (Booking, Period, NoPpl) => Double = ???
+  
 }
 
-object Sandbox extends App {
-
-  import Functions._
-
-  val booking = Booking(List(
-    Room("1", 0, view = true, capacity = 5, price = 100, rating = 3.2, booked = false),
-    Room("2", 0, view = true, capacity = 3, price = 150, rating = 9.2, booked = true),
-    Room("3", 0, view = false, capacity = 3, price = 120, rating = 8.4, booked = false),
-    Room("4", 0, view = true, capacity = 4, price = 140, rating = 7.2, booked = false),
-    Room("5", 0, view = true, capacity = 4, price = 140, rating = 4.6, booked = false)
-  ))
-
-  println(costPerPersonForBest(booking))
-}
