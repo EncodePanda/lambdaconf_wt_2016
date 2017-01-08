@@ -130,8 +130,9 @@ object DealingWithChangingState {
       (newBooking, room)
     }
 
-    def currentReservationId(booking: Booking): ReservationId = ???
-    
+    def currentReservationId(booking: Booking): ReservationId =
+      booking.rooms.flatMap(_.booked.map(_.id)).foldLeft(0)(Math.max)
+
     def fetchRoom(booking: Booking)(no: String): (Booking, Option[Room]) = ???
 
     def book(booking: Booking)(
