@@ -203,17 +203,22 @@ object Sandbox extends App {
 
   import Domain._
   import DealingWithChangingState.BookingService._
+  import IOOperations._
 
   val guest = Guest("Pawel", "Szulc")
   val period = Period(LocalDate.of(2017, 1, 8), LocalDate.of(2017, 1, 12))
 
-  val booking = Booking()
   val recipe: BookingState[List[ReservationId]] = for {
     resId1 <- bookVip("101", floor = 1, view = true, capacity = 5, period)(guest)
     resId2 <- bookVip("102", floor = 1, view = true, capacity = 5, period)(guest)
   } yield List(resId1, resId2)
 
-  val (modifiedBooking, reservations) = recipe.run(booking)
-  println(s"booking: $modifiedBooking")
+  val app = for {
+    booking <- fetchBooking()
+    (modifiedBooking, reservations) = recipe.run(booking)
+    _ <- updateBooking(modifiedBooking)
+  } yield reservations
+
+  val reservations: List[ReservationId] = app.unsafePerformSync
   println(s"reservation ids: $reservations")
 }
