@@ -85,11 +85,11 @@ object Functions2 {
     booking: F[Booking],
     fetchPeriod: Booking => F[Period],
     fetchNoPpl: Booking => F[NoPpl]
-  ): F[Option[Room]] = booking >>= (
-    b => (fetchPeriod(b) >>= (
-    p => fetchNoPpl(b).map(
-    n =>
-      proposeBest(b, p, n)))))
+  ): F[Option[Room]] = for {
+    b <- booking
+    p <- fetchPeriod(b)
+    n <- fetchNoPpl(b)
+  } yield proposeBest(b, p, n)
 
   
 }
