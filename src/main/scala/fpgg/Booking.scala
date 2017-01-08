@@ -40,6 +40,8 @@ object Functions {
   val proposeBest: Booking => Room =
     ((b: Booking) => b.rooms) >>> pickAvailable >>> filterWithView >>> sortByRating >>> (rooms => rooms(0))
 
+  val costPerPersonForBest: Booking => Double =
+    proposeBest >>> costPerPerson
 }
 
 object Sandbox extends App {
@@ -54,6 +56,5 @@ object Sandbox extends App {
     Room("5", 0, view = true, capacity = 4, price = 140, rating = 4.6, booked = false)
   ))
 
-  val best: Room = proposeBest(booking)
-  println(best)
+  println(costPerPersonForBest(booking))
 }
