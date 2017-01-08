@@ -85,12 +85,8 @@ object Functions2 {
     booking: F[Booking],
     fetchPeriod: Booking => F[Period],
     fetchNoPpl: Booking => F[NoPpl]
-  ): F[Option[Room]]  = {
-    val period: F[Period] = Bind[F].bind(booking)(fetchPeriod)
-    val noPpl: F[NoPpl] = Bind[F].bind(booking)(fetchNoPpl)
-
-    (booking |@| period |@| noPpl)(proposeBest)
-  }
+  ): F[Option[Room]] =
+    booking >>= (b => (fetchPeriod(b) >>= (p => fetchNoPpl(b).map(n => proposeBest(b, p, n)))))
 
   
 }
