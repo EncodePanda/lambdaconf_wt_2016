@@ -32,8 +32,8 @@ object Domain {
     booked: List[Reservation])
 
   case class Booking(
-    var rooms: List[Room] = List.empty[Room],
-    var events: List[Event] = List.empty[Event]
+    rooms: List[Room] = List.empty[Room],
+    events: List[Event] = List.empty[Event]
   )
 }
 
@@ -105,7 +105,7 @@ object DealingWithChangingState {
 
   import Domain._
 
-  class RoomGenerator {
+  object RoomGenerator {
     def generateRoom(
       no: String,
       floor: Int,
@@ -115,54 +115,31 @@ object DealingWithChangingState {
       Room(no, floor, view, capacity, capacity * 100, 10.0, booked = List.empty[Reservation])
   }
 
-  /*
-   * Corrupted approach
-   */
-  class BookingService(booking: Booking, roomGenerator: RoomGenerator) {
+  object BookingService {
 
-    def addRoom(
-      no: String,
+    def addRoom(booking: Booking)(no: String,
       floor: Int,
       view: Boolean,
       capacity: Int
-    ): Room = {
-      val room = roomGenerator.generateRoom(no, floor, view, capacity)
-      booking.events = RoomAdded(no) :: booking.events
-      booking.rooms = room :: booking.rooms
-      room
-    }
+    ): (Booking, Room) = ???
 
-    def currentReservationId: ReservationId =
-      booking.rooms.flatMap(_.booked.map(_.id)).foldLeft(0)(Math.max)
+    def currentReservationId(booking: Booking): ReservationId = ???
+    
+    def fetchRoom(booking: Booking)(no: String): (Booking, Option[Room]) = ???
 
-    def fetchRoom(no: String): Option[Room] = {
-      booking.events = RoomFetched(no) :: booking.events
-      booking.rooms.filter(_.no == no).headOption
-    }
-
-    def book(
+    def book(booking: Booking)(
       room: Room,
       period: Period,
       guest: Guest,
-      reservationId: ReservationId): Unit = {
-      booking.events = ReservationMade(reservationId) :: booking.events
-      val reservation = Reservation(reservationId, period, guest)
-      val updatedRoom = room.copy(booked = reservation :: room.booked)
-      booking.rooms = updatedRoom :: booking.rooms.filter(_ != room)
-    }
+      reservationId: ReservationId
+    ): (Booking, Unit) = ???
 
-    def bookVip(
+    def bookVip(booking: Booking)(
       no: String,
       floor: Int,
       view: Boolean,
       capacity: Int,
       period: Period
-    )(guest: Guest): ReservationId = {
-      val maybeRoom: Option[Room] = fetchRoom(no)
-      val room: Room = maybeRoom.getOrElse(addRoom(no, floor, view, capacity))
-      val reservationId = currentReservationId + 1
-      book(room, period, guest, reservationId)
-      reservationId
-    }
+    )(guest: Guest): (Booking, ReservationId) = ???
   }
 }
