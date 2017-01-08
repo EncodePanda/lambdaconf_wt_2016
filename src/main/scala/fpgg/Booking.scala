@@ -83,9 +83,9 @@ object Functions2 {
 
   def bestFor[F[_]: Applicative](
     booking: F[Booking],
-    period: F[Period],
-    noPpl: F[NoPpl]
-  ): F[Option[Room]]  = (booking |@| period |@| noPpl)(proposeBest)
+    fetchPeriod: Booking => F[Period],
+    fetchNoPpl: Booking => F[NoPpl]
+  ): F[Option[Room]]  = ???
 
   
 }
