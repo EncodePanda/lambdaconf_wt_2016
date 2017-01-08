@@ -73,12 +73,20 @@ object Functions {
 object Functions2 {
 
   import Domain._
+  import Functions._
 
   val isAffordable: (Room, Price) => Boolean =
     (r: Room, p: Price) => r.price <= p
 
   def affordableFor[F[_] : Applicative](room: F[Room], price: Price): F[Boolean] = 
     (room |@| price.point[F])(isAffordable)
+
+  def bestFor[F[_]: Applicative](
+    booking: F[Booking],
+    period: F[Period],
+    noPpl: F[NoPpl]
+  ): F[Option[Room]]  = (booking |@| period |@| noPpl)(proposeBest)
+
   
 }
 
