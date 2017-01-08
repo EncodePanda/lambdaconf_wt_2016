@@ -51,7 +51,17 @@ object Functions {
   val sortByRating: List[Room] => List[Room] =
     (rooms: List[Room]) => rooms.sorted
 
-  val proposeBest: (Booking, Period, NoPpl) => Room = ???
+  val proposeBest: (Booking, Period, NoPpl) => Room = {
+    case (Booking(rooms), period, noPpl) => {
+      val pickForPeriod: List[Room] => List[Room] = pickAvailable.curried(period)
+      val filterForNoPpl: List[Room] => List[Room] = filterCanAccomodate.curried(noPpl)
+
+      val propose: List[Room] => Room =
+        pickForPeriod >>> filterWithView >>> filterForNoPpl >>> sortByRating >>> (rooms => rooms(0))
+      propose(rooms)
+    }
+
+  }
 
   val costPerPersonForBest2: (Booking, Period, NoPpl) => Double = ???
   
