@@ -133,7 +133,13 @@ object DealingWithChangingState {
     def currentReservationId(booking: Booking): ReservationId =
       booking.rooms.flatMap(_.booked.map(_.id)).foldLeft(0)(Math.max)
 
-    def fetchRoom(booking: Booking)(no: String): (Booking, Option[Room]) = ???
+    def fetchRoom(booking: Booking)(no: String): (Booking, Option[Room]) = {
+      val newBooking = booking.copy(
+        events = RoomFetched(no) :: booking.events
+      )
+      val fetched = booking.rooms.filter(_.no == no).headOption
+      (newBooking, fetched)
+    }
 
     def book(booking: Booking)(
       room: Room,
