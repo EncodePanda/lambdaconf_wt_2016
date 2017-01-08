@@ -63,7 +63,24 @@ object Functions {
 
   }
 
-  val costPerPersonForBest2: (Booking, Period, NoPpl) => Double = ???
+  lazy val costPerPersonForBest2: (Booking, Period, NoPpl) => Double = ???
   
+}
+
+object Sandbox extends App {
+
+  import Functions._
+  import Domain._
+
+  val booking = Booking(List(
+    Room("1", 0, view = true, capacity = 5, price = 100, rating = 3.2, booked = Nil),
+    Room("2", 0, view = true, capacity = 3, price = 150, rating = 9.2, booked = Nil),
+    Room("3", 0, view = false, capacity = 3, price = 120, rating = 8.4, booked = Nil),
+    Room("4", 0, view = true, capacity = 4, price = 140, rating = 7.2, booked = Nil),
+    Room("5", 0, view = true, capacity = 4, price = 140, rating = 4.6, booked = Nil)
+  ))
+  val period = Period(LocalDate.of(2017,1,8), LocalDate.of(2017,1,12))
+
+  println(proposeBest(booking, period, 3))
 }
 
