@@ -4,7 +4,7 @@ import language.higherKinds
 import scala.math.{Ordering => SOrdering}
 import java.time.LocalDate
 
-import scalaz._
+import scalaz._, scalaz.concurrent.Task
 import Scalaz._
 
 object Domain {
@@ -75,16 +75,12 @@ object Sandbox extends App {
   import Functions._
   import Domain._
 
-  val booking = Booking(List(
-    Room("1", 0, view = true, capacity = 5, price = 100, rating = 3.2, booked = Nil),
-    Room("2", 0, view = true, capacity = 3, price = 150, rating = 9.2, booked = Nil),
-    Room("3", 0, view = false, capacity = 3, price = 120, rating = 8.4, booked = Nil),
-    Room("4", 0, view = true, capacity = 4, price = 140, rating = 7.2, booked = Nil),
-    Room("5", 0, view = true, capacity = 4, price = 140, rating = 4.6, booked = Nil)
-  ))
-  val period = Period(LocalDate.of(2017,1,8), LocalDate.of(2017,1,12))
+  type Error[A] = String \/ A
+  def parse(json: String): Error[Room] = ???
+  val cpp: Error[Double] = costPerPerson[Error].apply(parse("json goes here"))
 
-  println(proposeBest(booking, period, 3))
-  println(costPerPersonForBest(booking, period, 3))
+  def fetchFromDB(no: String): Task[Room] = ???
+  val cpp2: Task[Double] = costPerPerson[Task].apply(fetchFromDB("1c"))
+
 }
 
