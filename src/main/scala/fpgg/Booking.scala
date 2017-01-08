@@ -77,7 +77,7 @@ object Functions2 {
   val isAffordable: (Room, Price) => Boolean =
     (r: Room, p: Price) => r.price <= p
 
-  def affordableFor[F[_] : Functor](room: F[Room], price: F[Price]): F[Boolean] = ???
+  def affordableFor[F[_] : Functor](room: F[Room], price: Price): F[Boolean] = ???
 
   
 }
