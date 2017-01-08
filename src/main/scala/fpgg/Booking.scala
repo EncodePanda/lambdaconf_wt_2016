@@ -120,7 +120,6 @@ object DealingWithChangingState {
    */
   class BookingService(booking: Booking, roomGenerator: RoomGenerator) {
 
-    // adds room to booking, stores an event
     def addRoom(
       no: String,
       floor: Int,
@@ -133,26 +132,37 @@ object DealingWithChangingState {
       room
     }
 
-    // returns current reservation id
-    def currentReservationId: ReservationId = ???
+    def currentReservationId: ReservationId =
+      booking.rooms.flatMap(_.booked.map(_.id)).foldLeft(0)(Math.max)
 
-    // fetches room by number
-    def fetchRoom(no: String): Option[Room] = ???
+    def fetchRoom(no: String): Option[Room] = {
+      booking.events = RoomFetched(no) :: booking.events
+      booking.rooms.filter(_.no == no).headOption
+    }
 
-    // books a guest to a room for a given period
     def book(
       room: Room,
       period: Period,
       guest: Guest,
-      reservationId: ReservationId): Unit = ???
+      reservationId: ReservationId): Unit = {
+      booking.events = ReservationMade(reservationId) :: booking.events
+      val reservation = Reservation(reservationId, period, guest)
+      val updatedRoom = room.copy(booked = reservation :: room.booked)
+      booking.rooms = updatedRoom :: booking.rooms.filter(_ != room)
+    }
 
-    // book vor VIP = book given room, if it does not exist then build it
     def bookVip(
       no: String,
       floor: Int,
       view: Boolean,
       capacity: Int,
       period: Period
-    )(guest: Guest): ReservationId = ???
+    )(guest: Guest): ReservationId = {
+      val maybeRoom: Option[Room] = fetchRoom(no)
+      val room: Room = maybeRoom.getOrElse(addRoom(no, floor, view, capacity))
+      val reservationId = currentReservationId + 1
+      book(room, period, guest, reservationId)
+      reservationId
+    }
   }
 }
