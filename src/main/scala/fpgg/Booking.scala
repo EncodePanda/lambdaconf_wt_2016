@@ -162,12 +162,24 @@ object DealingWithChangingState {
       }
     })
 
+    type BookingState[A] = State[Booking, A]
+
     def bookVip(
       no: String,
       floor: Int,
       view: Boolean,
       capacity: Int,
       period: Period
-    )(guest: Guest): State[Booking, ReservationId] = ???
+    )(guest: Guest): State[Booking, ReservationId] = for {
+      maybeRoom <- fetchRoom(no)
+      room <- maybeRoom match {
+        case Some(r) => r.point[BookingState]
+        case None => addRoom(no, floor, view, capacity)
+      }
+      currentId <- currentReservationId
+      reservationId = currentId + 1
+      _ <- book(room, period, guest, reservationId)
+
+    } yield reservationId
   }
 }
