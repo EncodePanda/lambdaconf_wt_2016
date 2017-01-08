@@ -163,6 +163,15 @@ object DealingWithChangingState {
       view: Boolean,
       capacity: Int,
       period: Period
-    )(guest: Guest): (Booking, ReservationId) = ???
+    )(guest: Guest): (Booking, ReservationId) = {
+      val (nb1, maybeRoom) = fetchRoom(booking)(no)
+      val (nb2, room) = maybeRoom match {
+        case Some(r) => (nb1, r)
+        case None => addRoom(nb1)(no, floor, view, capacity)
+      }
+      val reservationId = currentReservationId(nb2) + 1
+      val (nb3, _) = book(nb2)(room, period, guest, reservationId)
+      (nb3, reservationId)
+    }
   }
 }
