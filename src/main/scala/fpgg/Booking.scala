@@ -118,39 +118,41 @@ object DealingWithChangingState {
 
   object BookingService {
 
-    def addRoom(no: String,
+    def addRoom[F[_] : Monad](no: String,
       floor: Int,
       view: Boolean,
       capacity: Int
-    ): State[Booking, Room] = State({
-      case booking => {
+    ): StateT[F, Booking, Room] = StateT[F, Booking, Room]({
+      case booking: Booking => {
         val room = RoomGenerator.generateRoom(no, floor, view, capacity)
         val newBooking = booking.copy(
           rooms = room :: booking.rooms,
           events = RoomAdded(no) :: booking.events
         )
-        (newBooking, room)
+        ((newBooking, room)).point[F]
       }
     })
 
-    def currentReservationId: State[Booking, ReservationId] = State({
-      case booking =>
-        (booking, booking.rooms.flatMap(_.booked.map(_.id)).foldLeft(0)(Math.max))
-    })
+    def currentReservationId[F[_] : Monad]: StateT[F, Booking, ReservationId] =
+      StateT[F, Booking, ReservationId]({
+        case booking =>
+          ((booking, booking.rooms.flatMap(_.booked.map(_.id)).foldLeft(0)(Math.max))).point[F]
+      })
 
-    def fetchRoom(no: String): State[Booking, Option[Room]] = State({
-      case booking => {
-        val newBooking = booking.copy(
-          events = RoomFetched(no) :: booking.events
-        )
-        val fetched = booking.rooms.filter(_.no == no).headOption
-        (newBooking, fetched)
-      }
-    })
+    def fetchRoom[F[_] : Monad](no: String): StateT[F, Booking, Option[Room]] =
+      StateT[F, Booking, Option[Room]]({
+        case booking => {
+          val newBooking = booking.copy(
+            events = RoomFetched(no) :: booking.events
+          )
+          val fetched = booking.rooms.filter(_.no == no).headOption
+            ((newBooking, fetched)).point[F]
+        }
+      })
 
-    def book(
+    def book[F[_] : Monad](
       room: Room, period: Period, guest: Guest, reservationId: ReservationId
-    ): State[Booking, Unit] = State({
+    ): StateT[F, Booking, Unit] = StateT[F, Booking, Unit]({
       case booking => {
         val reservation = Reservation(reservationId, period, guest)
         val updatedRoom = room.copy(booked = reservation :: room.booked)
@@ -159,29 +161,28 @@ object DealingWithChangingState {
           events = ReservationMade(reservationId) :: booking.events,
           rooms = updatedRoom :: booking.rooms.filter(_ != room)
         )
-        (newBooking, ())
+          ((newBooking, ())).point[F]
       }
     })
 
-    type BookingState[A] = State[Booking, A]
-
-    def bookVip(
+    def bookVip[F[_] : Monad](
       no: String,
       floor: Int,
       view: Boolean,
       capacity: Int,
       period: Period
-    )(guest: Guest): State[Booking, ReservationId] = for {
-      maybeRoom <- fetchRoom(no)
+    )(guest: Guest): StateT[F, Booking, ReservationId] = for {
+      maybeRoom <- fetchRoom[F](no)
       room <- maybeRoom match {
-        case Some(r) => r.point[BookingState]
-        case None => addRoom(no, floor, view, capacity)
+        case Some(r) => r.point[StateT[F, Booking, ?]]
+        case None => addRoom[F](no, floor, view, capacity)
       }
-      currentId <- currentReservationId
+      currentId <- currentReservationId[F]
       reservationId = currentId + 1
-      _ <- book(room, period, guest, reservationId)
+      _ <- book[F](room, period, guest, reservationId)
 
     } yield reservationId
+
   }
 }
 
@@ -212,19 +213,20 @@ object Sandbox extends App {
 
   val period = Period(LocalDate.of(2017, 1, 8), LocalDate.of(2017, 1, 12))
 
-  /* this does not compile */
-  // val recipe: BookingState[List[ReservationId]] = for {
-    // guest <- findGuest(1)
-    // resId1 <- bookVip("101", floor = 1, view = true, capacity = 5, period)(guest)
-    // resId2 <- bookVip("102", floor = 1, view = true, capacity = 5, period)(guest)
-  // } yield List(resId1, resId2)
+  val recipe: StateT[Task, Booking, List[ReservationId]] = for {
+    guest <- findGuest(1).liftM[StateT[?[_], Booking, ?]]
+    resId1 <- bookVip[Task]("101", floor = 1, view = true, capacity = 5, period)(guest)
+    resId2 <- bookVip[Task]("102", floor = 1, view = true, capacity = 5, period)(guest)
+  } yield List(resId1, resId2)
 
-  // val app = for {
-    // booking <- fetchBooking()
-    // (modifiedBooking, reservations) = recipe.run(booking)
-    // _ <- updateBooking(modifiedBooking)
-  // } yield reservations
+  val app: Task[List[ReservationId]] = for {
+    booking <- fetchBooking()
+    result <- recipe.run(booking)
+    (modifiedBooking, reservations) = result
+    _ <- updateBooking(modifiedBooking)
+  } yield reservations
 
-  // val reservations: List[ReservationId] = app.unsafePerformSync
-  // println(s"reservation ids: $reservations")
+  val reservations: List[ReservationId] = app.unsafePerformSync
+  println(s"reservation ids: $reservations")
+
 }
