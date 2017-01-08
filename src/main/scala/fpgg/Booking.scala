@@ -81,11 +81,16 @@ object Functions2 {
   def affordableFor[F[_] : Applicative](room: F[Room], price: Price): F[Boolean] = 
     (room |@| price.point[F])(isAffordable)
 
-  def bestFor[F[_]: Applicative](
+  def bestFor[F[_]: Bind](
     booking: F[Booking],
     fetchPeriod: Booking => F[Period],
     fetchNoPpl: Booking => F[NoPpl]
-  ): F[Option[Room]]  = ???
+  ): F[Option[Room]]  = {
+    val period: F[Period] = Bind[F].bind(booking)(fetchPeriod)
+    val noPpl: F[NoPpl] = Bind[F].bind(booking)(fetchNoPpl)
+
+    (booking |@| period |@| noPpl)(proposeBest)
+  }
 
   
 }
