@@ -121,7 +121,14 @@ object DealingWithChangingState {
       floor: Int,
       view: Boolean,
       capacity: Int
-    ): (Booking, Room) = ???
+    ): (Booking, Room) = {
+      val room = RoomGenerator.generateRoom(no, floor, view, capacity)
+      val newBooking = booking.copy(
+        rooms = room :: booking.rooms,
+        events = RoomAdded(no) :: booking.events
+      )
+      (newBooking, room)
+    }
 
     def currentReservationId(booking: Booking): ReservationId = ???
     
