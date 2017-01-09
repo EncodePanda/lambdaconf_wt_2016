@@ -9,7 +9,14 @@ object MonadTransformers {
 
   def calculate(input: String): Error[Option[Int]] = ???
 
-  val plus1: Option[Int] = ???
+  val plus1: Error[Option[Int]] = for {
+    maybeValue <- calculate("some")
+  } yield {
+    for {
+      v <- maybeValue
+    } yield (v + 1)
+  }
+
 
 }
 
