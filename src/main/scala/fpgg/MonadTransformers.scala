@@ -7,16 +7,11 @@ object MonadTransformers {
 
   type Error[A] = String \/ A
 
-  def calculate(input: String): Error[Option[Int]] = ???
+  def calculate(input: String): OptionT[Error, Int] = ???
 
-  val plus1: Error[Option[Int]] = for {
-    maybeValue <- calculate("some")
-  } yield {
-    for {
-      v <- maybeValue
-    } yield (v + 1)
-  }
-
+  val plus1: OptionT[Error, Int] = for {
+    v <- calculate("some")
+  } yield (v + 1)
 
 }
 
