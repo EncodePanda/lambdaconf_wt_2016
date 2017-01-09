@@ -213,18 +213,18 @@ object Sandbox extends App {
   val period = Period(LocalDate.of(2017, 1, 8), LocalDate.of(2017, 1, 12))
 
   /* this does not compile */
-  val recipe: BookingState[List[ReservationId]] = for {
-    guest <- findGuest(1)
-    resId1 <- bookVip("101", floor = 1, view = true, capacity = 5, period)(guest)
-    resId2 <- bookVip("102", floor = 1, view = true, capacity = 5, period)(guest)
-  } yield List(resId1, resId2)
+  // val recipe: BookingState[List[ReservationId]] = for {
+    // guest <- findGuest(1)
+    // resId1 <- bookVip("101", floor = 1, view = true, capacity = 5, period)(guest)
+    // resId2 <- bookVip("102", floor = 1, view = true, capacity = 5, period)(guest)
+  // } yield List(resId1, resId2)
 
-  val app = for {
-    booking <- fetchBooking()
-    (modifiedBooking, reservations) = recipe.run(booking)
-    _ <- updateBooking(modifiedBooking)
-  } yield reservations
+  // val app = for {
+    // booking <- fetchBooking()
+    // (modifiedBooking, reservations) = recipe.run(booking)
+    // _ <- updateBooking(modifiedBooking)
+  // } yield reservations
 
-  val reservations: List[ReservationId] = app.unsafePerformSync
-  println(s"reservation ids: $reservations")
+  // val reservations: List[ReservationId] = app.unsafePerformSync
+  // println(s"reservation ids: $reservations")
 }
