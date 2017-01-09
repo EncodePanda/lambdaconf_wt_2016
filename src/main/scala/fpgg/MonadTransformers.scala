@@ -5,11 +5,11 @@ import Scalaz._
 
 object MonadTransformers {
 
-  def calculate(input: String): Option[Int] = ???
+  type Error[A] = String \/ A
 
-  val plus1: Option[Int] = for {
-    v <- calculate("some")
-  } yield (v + 1)
+  def calculate(input: String): Error[Option[Int]] = ???
+
+  val plus1: Option[Int] = ???
 
 }
 
